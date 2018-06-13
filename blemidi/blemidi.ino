@@ -53,6 +53,10 @@ MIDI_CREATE_BLE_INSTANCE(blemidi);
 // Variable that holds the current position in the sequence.
 int position = 0;
 
+// VR values
+float x;
+float y;
+
 // Variable that holds sustain on-off
 bool sustainPedal = false;
 
@@ -173,18 +177,38 @@ void handleNoteOff(byte channel, byte pitch, byte velocity)
 
 void loop()
 {
-  // Don't continue if we aren't connected.
-  if (! Bluefruit.connected()) {
-    return;
-  }
+//  // Don't continue if we aren't connected.
+//  if (! Bluefruit.connected()) {
+//    display.clearDisplay();
+//    display.setCursor(0, 0);
+//    display.println("Ready to connect");
+//    display.display();
+//    return;
+//  } else
+//  // Don't continue if the connected device isn't ready to receive messages.
+//  if (! blemidi.notifyEnabled()) {
+//    display.clearDisplay();
+//    display.setCursor(0, 0);
+//    display.println("Host not ready");
+//    display.display();
+//    return;
+//  } else {
+//    display.clearDisplay();
+//    display.setCursor(0, 0);
+//    display.println("Ready to send");
+//    display.display();
+//  }
 
-  // Don't continue if the connected device isn't ready to receive messages.
-  if (! blemidi.notifyEnabled()) {
-    return;
-  }
-
+  x = analogRead(2) * .255;
+  y = analogRead(3) * .255;
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.printf("X-VALUE: %.0f", x);
+  display.println();
+  display.printf("Y-VALUE: %.0f", y);
+  display.display();
+//  delay(100);
   // Send sustain
-
   if (sustainPedal == false && ! digitalRead(BUTTON_C)) {
     sustainPedal = true;
     MIDI.sendControlChange(64, 127, 1);
