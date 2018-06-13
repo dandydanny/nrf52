@@ -249,34 +249,34 @@ void loop()
 
 // Setup variables for the current and previous
 // positions in the note sequence.
-  int current = position;
-  int previous  = position - 1;
+//  int current = position;
+//  int previous  = position - 1;
 
 // If we currently are at position 0, set the
 // previous position to the last note in the sequence.
-  if (previous < 0) {
-    previous = sizeof(note_sequence) - 1;
-  }
+//  if (previous < 0) {
+//    previous = sizeof(note_sequence) - 1;
+//  }
 
 // Send Note On for current position at full velocity (127) on channel 1.
-  MIDI.sendNoteOn(note_sequence[current], 80, 1);
-  delay(50);
+//  MIDI.sendNoteOn(note_sequence[current], 80, 1);
+//  delay(50);
 
 // Send Note Off for previous note.
 //  MIDI.sendNoteOff(note_sequence[previous], 0, 1);
 
 // Turn off current note
-  MIDI.sendNoteOff(note_sequence[current], 0, 1);
-  delay(200);
+//  MIDI.sendNoteOff(note_sequence[current], 0, 1);
+//  delay(200);
 
 
 
 // Increment position
-  position++;
+//  position++;
 
 // If we are at the end of the sequence, start over.
-  if (position >= sizeof(note_sequence)) {
-    position = 0;
+//  if (position >= sizeof(note_sequence)) {
+//    position = 0;
 //    delay(1000);
 // Toggle sustain at end of song
     if (sustainPedal == true ) {
@@ -288,7 +288,7 @@ void loop()
 //      display.println("MIDI sustain off");
 //      display.display();
     }
-    else {
+//    else {
 //      sustainPedal = true;
 //      MIDI.sendControlChange(64, 127, 1);
 //      display.clearDisplay();
@@ -296,15 +296,15 @@ void loop()
 //      display.setCursor(0,0);
 //      display.println("MIDI sustain on");
 //      display.display();
-    }
-  }
+//    }
+//  }
 
 
 
 
 // Send sustain
 // Usage: send(ControlChange, inControlNumber, inControlValue, inChannel);
-    if (sustainPedal == false && ! digitalRead(BUTTON_B)) {
+    if (sustainPedal == false && ! digitalRead(BUTTON_C)) {
       sustainPedal = true;
 //      digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
       MIDI.sendControlChange(64, 127, 1);
@@ -314,7 +314,7 @@ void loop()
       display.display();
 
 
-    } else  if (sustainPedal == true && digitalRead(BUTTON_B)) {
+    } else  if (sustainPedal == true && digitalRead(BUTTON_C)) {
 // digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW 
       MIDI.sendControlChange(64, 0, 1);
 // turn off all notes
