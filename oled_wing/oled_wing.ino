@@ -42,7 +42,7 @@ Adafruit_SSD1306 display = Adafruit_SSD1306();
 #endif
 
 void setup() {  
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   Serial.println("OLED FeatherWing test");
   // by default, we'll generate the high voltage from the 3.3v line internally! (neat!)
