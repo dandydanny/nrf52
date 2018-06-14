@@ -56,6 +56,9 @@ int position = 0;
 // VR values
 float x;
 float y;
+float prev_x;
+float prev_y;
+float jitterAllowance = 7;
 
 // Variable that holds sustain on-off
 bool sustainPedal = false;
@@ -199,14 +202,25 @@ void loop()
 //    display.display();
 //  }
 
-  x = analogRead(2) * .255;
-  y = analogRead(3) * .255;
+  // Read current value
+  x = analogRead(2);
+  y = analogRead(3);
+
+  // If current value is changed above jitter allowance, send
+  if (abs(x - prev_x) > jitterAllowance) {
+    MIDI.sendControlChange(1, (x-465) *.2953, 1);
+  }
   display.clearDisplay();
   display.setCursor(0, 0);
-  display.printf("X-VALUE: %.0f", x);
+  display.printf("X-VALUE: %f", x);
   display.println();
   display.printf("Y-VALUE: %.0f", y);
   display.display();
+
+  // Remember current value for next comparison
+  prev_x = x;
+  prev_y = y;
+
 //  delay(100);
   // Send sustain
   if (sustainPedal == false && ! digitalRead(BUTTON_C)) {
