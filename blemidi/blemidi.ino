@@ -63,9 +63,6 @@ float jitterAllowance = 7;
 // Variable that holds sustain on-off
 bool sustainPedal = false;
 
-// Variables will change:
-int ledState = LOW;             // ledState used to set the LED
-
 void setup()
 {
   Serial.begin(115200);
