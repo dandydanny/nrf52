@@ -205,6 +205,7 @@ void loop()
 
   // If current value is changed above jitter allowance, send
   if (abs(x - prev_x) > jitterAllowance) {
+    // x value 0-999, middle value ~465, mod wheel value 0-127
     MIDI.sendControlChange(1, (x-465) *.2953, 1);
   }
   display.clearDisplay();
