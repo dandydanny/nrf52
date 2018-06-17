@@ -54,14 +54,21 @@ float y;
 float prev_x;
 float prev_y;
 float jitterAllowance = 7;
-float midiValueCurrent = 0;
-float midiValuePrevious = 0;
-float joystickMiddle;
-float sensorMax;
-float sensorMin;
-float sensorValue;
+int midiValueCurrentX = 0;
+int midiValuePreviousX = 0;
+int midiValueCurrentY = 0;
+int midiValuePreviousY = 0;
+float joystickMiddleX;
+float sensorMaxX;
+float sensorMinX;
+float joystickMiddleY;
+float sensorMaxY;
+float sensorMinY;
+float sensorValueX;
+float sensorValueY;
 int calibrationLoopCount = 0;
-float sensorSum;
+float sensorSumX;
+float sensorSumY;
 
 // Variable that holds sustain on-off
 bool sustainPedal = false;
@@ -130,9 +137,9 @@ void setup()
   display.println("-------------------");
   display.println("BLE MIDI PEDAL");
   display.println();
-  display.print(sensorMin);
-  display.print(sensorMax);
-  display.print(joystickMiddle);
+//  display.print(sensorMin);
+//  display.print(sensorMax);
+//  display.print(joystickMiddle);
   display.setCursor(0, 0);
   display.display(); // actually display all of the above
   
@@ -140,37 +147,50 @@ void setup()
   // obtain center value
   // calibrate during the first five seconds
   while (millis() < 3000) {
-    sensorValue = analogRead(2);
-
+    sensorValueX = analogRead(2);
+    sensorValueY = analogRead(3);
     // record the maximum sensor value
-    if (sensorValue > sensorMax) {
-      sensorMax = sensorValue;
+    if (sensorValueX > sensorMaxX) {
+      sensorMaxX = sensorValueX;
+    }
+    if (sensorValueY > sensorMaxY) {
+      sensorMaxY = sensorValueY;
     }
 
     // record the minimum sensor value
-    if (sensorValue < sensorMin) {
-      sensorMin = sensorValue;
+    if (sensorValueX < sensorMinX) {
+      sensorMinX = sensorValueX;
     }
-    sensorSum = sensorSum + sensorValue;
+    if (sensorValueY < sensorMinY) {
+      sensorMinY = sensorValueY;
+    }
+    sensorSumX = sensorSumX + sensorValueX;
+    sensorSumY = sensorSumY + sensorValueY;
     display.clearDisplay();
     display.setCursor(0, 0);
 //    display.println(sensorMin);
 //    display.println(sensorMax);
     display.print("Calibration: ");
-    display.print(sensorSum);
+    display.println();
+    display.print(sensorSumX);
+    display.println();
+    display.print(sensorSumY);
     display.display();
 
     calibrationLoopCount = calibrationLoopCount + 1;
   }
-  joystickMiddle = sensorSum / calibrationLoopCount;
-//  display.clearDisplay();
-//  display.setCursor(0, 0);
+  joystickMiddleX = sensorSumX / calibrationLoopCount;
+  joystickMiddleY = sensorSumY / calibrationLoopCount;
+  display.clearDisplay();
+  display.setCursor(0, 0);
   display.println();
   display.print("Center value: ");
-  display.print(joystickMiddle);
+  display.print(joystickMiddleX);
+  display.print(joystickMiddleY);
   display.println();
   display.print("Threshold: ");
-  display.print(sensorMax);
+  display.print(sensorMaxX);
+  display.print(sensorMaxY);
   display.display();  
   delay(2000);
 }
@@ -245,7 +265,7 @@ void loop()
 
   // Read current value
   x = analogRead(2);
-//  y = analogRead(3);
+  y = analogRead(3);
 
 // If current value is changed above jitter allowance, send
 //  if (abs(x - prev_x) > jitterAllowance) {
@@ -255,9 +275,12 @@ void loop()
 //  midiValueCurrent = (x-455) * .24;
 
   // Map analog read value 0-1000 to MIDI value space 0-127
-  midiValueCurrent = map(x, sensorMax, 895, 0, 127);
+  midiValueCurrentX = map(x, sensorMaxX, 895, 0, 127);
+  midiValueCurrentY = map(y, sensorMaxY, 895, 0, 127);
+  
   // Limit MIDI value between 0-127
-  midiValueCurrent = constrain(midiValueCurrent, 0, 127);
+  midiValueCurrentX = constrain(midiValueCurrentX, 0, 127);
+  midiValueCurrentY = constrain(midiValueCurrentY, 0, 127);
 
   // Limit MIDI value between 0-127
 //  if (midiValueCurrent > 127) {
@@ -269,7 +292,7 @@ void loop()
 //  Serial.println(x);
 //  Serial.println(midiValueCurrent);
 //  if (x > sensorMax && abs(midiValueCurrent - midiValuePrevious) > 0) {
-  if (x > sensorMax) {
+  if (x > sensorMaxX || x < sensorMinX) {
     // display MIDI value
 //    display.setCursor(0, 24);
 //    display.clearDisplay();
@@ -277,8 +300,20 @@ void loop()
 //    display.display();
 
     //74 = brightness, 1 = modulation 
-    MIDI.sendControlChange(1, midiValueCurrent, 1);
-    midiValuePrevious = midiValueCurrent;
+    MIDI.sendControlChange(74, midiValueCurrentX, 1);
+    midiValuePreviousX = midiValueCurrentX;
+  } 
+
+    if (y > sensorMaxY || y < sensorMinY) {
+    // display MIDI value
+//    display.setCursor(0, 24);
+//    display.clearDisplay();
+//    display.printf("MIDI: %.0f", midiValueCurrent);
+//    display.display();
+
+    //74 = brightness, 1 = modulation 
+    MIDI.sendControlChange(71, midiValueCurrentY, 1);
+    midiValuePreviousY = midiValueCurrentY;
   } 
 //  display.clearDisplay();
   
@@ -308,7 +343,7 @@ void loop()
 //    display.println("MIDI sustain off");
 //    display.display();
 //  }
-  delay(10);
+//  delay(10);
 }
 
 void midiRead()
