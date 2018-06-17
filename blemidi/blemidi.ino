@@ -170,10 +170,9 @@ void setup()
     display.setCursor(0, 0);
 //    display.println(sensorMin);
 //    display.println(sensorMax);
-    display.print("Calibration: ");
-    display.println();
+    display.print("Cal: ");
     display.print(sensorSumX);
-    display.println();
+    display.print(" ");
     display.print(sensorSumY);
     display.display();
 
@@ -183,13 +182,14 @@ void setup()
   joystickMiddleY = sensorSumY / calibrationLoopCount;
   display.clearDisplay();
   display.setCursor(0, 0);
-  display.println();
-  display.print("Center value: ");
+  display.print("Center: ");
   display.print(joystickMiddleX);
+  display.print(" ");
   display.print(joystickMiddleY);
   display.println();
-  display.print("Threshold: ");
+  display.print("Thrs: ");
   display.print(sensorMaxX);
+  display.print(" ");
   display.print(sensorMaxY);
   display.display();  
   delay(2000);
@@ -275,8 +275,8 @@ void loop()
 //  midiValueCurrent = (x-455) * .24;
 
   // Map analog read value 0-1000 to MIDI value space 0-127
-  midiValueCurrentX = map(x, sensorMaxX, 895, 0, 127);
-  midiValueCurrentY = map(y, sensorMaxY, 895, 0, 127);
+  midiValueCurrentX = map(x, 10, 850, 0, 127);
+  midiValueCurrentY = map(y, 10, 850, 0, 127);
   
   // Limit MIDI value between 0-127
   midiValueCurrentX = constrain(midiValueCurrentX, 0, 127);
@@ -292,7 +292,7 @@ void loop()
 //  Serial.println(x);
 //  Serial.println(midiValueCurrent);
 //  if (x > sensorMax && abs(midiValueCurrent - midiValuePrevious) > 0) {
-  if (x > sensorMaxX || x < sensorMinX) {
+  if (x > sensorMaxX + jitterAllowance || x < joystickMiddleX - jitterAllowance) {
     // display MIDI value
 //    display.setCursor(0, 24);
 //    display.clearDisplay();
@@ -304,7 +304,7 @@ void loop()
     midiValuePreviousX = midiValueCurrentX;
   } 
 
-    if (y > sensorMaxY || y < sensorMinY) {
+    if (y > sensorMaxY + jitterAllowance|| y < joystickMiddleY - jitterAllowance) {
     // display MIDI value
 //    display.setCursor(0, 24);
 //    display.clearDisplay();
