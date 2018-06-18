@@ -31,6 +31,15 @@ Adafruit_SSD1306 display = Adafruit_SSD1306();
 // and attach BluefruitLE MIDI as the transport.
 MIDI_CREATE_BLE_INSTANCE(blemidi);
 
+// Time and switch state variables
+unsigned long timeBegin = 0;
+unsigned long timeEnd = 0;
+unsigned long timeDiff = 0;
+int sw1state = 0;
+int sw2state = 0;
+int midiValue;
+int note = 38; //D1
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -139,27 +148,75 @@ void handleNoteOff(byte channel, byte pitch, byte velocity)
   Serial.println();
 }
 
+void printSwitchState() {
+//  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.print(digitalRead(2));
+  display.print(" ");
+  display.print(digitalRead(3));
+  display.display();
+}
+
+void printTimeVars() {
+  display.setCursor(0, 8);
+  display.print("Begin: ");
+  display.print(timeBegin);
+  display.println();
+  display.print("End  : ");
+  display.print(timeEnd);
+  display.display();
+}
+
+void printDiff() {
+  midiValue = map(timeDiff, 60, 10, 0, 127);
+  midiValue = constrain(midiValue, 20, 127);
+  MIDI.sendNoteOn(note, midiValue, 1);
+  display.setCursor(0, 24);
+  display.print("Diff : ");
+  display.print(timeDiff);
+  display.print(" ");
+  display.print(midiValue);
+  display.display();
+  
+}
+
 void loop() {
   display.clearDisplay();
-  // Send sustain
-  if (! digitalRead(2)) {
-    display.clearDisplay();
-    display.setCursor(0, 0);
-    display.println("Pin 2 pulled low");
-    
-  } else {
-    display.setCursor(0, 0);
-    display.println("Pin 2");
+
+  // If switch is at home position, do nothing
+  while (! digitalRead(2)) {
+//    printSwitchState();
+//    printTimeVars();
   }
   
-  if (! digitalRead(3)) {
-    display.setCursor(0, 8);
-    display.println("Pin 3 pulled low");
-  } else {
-    display.setCursor(0, 8);
-    display.println("Pin 3");
+  // If switch leaves resting position, store starting time
+  if (digitalRead(2)) {
+    timeBegin = millis();
+//    printSwitchState();
+//    printTimeVars();
   }
-  display.display();
+
+  // Until switch has reach down position, do nothing
+  while (digitalRead(3)) {
+//    printSwitchState();
+//    printTimeVars();
+  }
+  
+  // When switch reach down position, store end time 
+  if (! digitalRead(3)) {
+    timeEnd = millis();
+    timeDiff = timeEnd - timeBegin;
+//    printSwitchState();
+    printDiff();
+  }
+
+  // While sw1 is high (not in home position), halt program loop
+  while (digitalRead(2)) {
+//    printSwitchState();
+//    printTimeVars();
+  }
+  // Send Note Off for previous note.
+  MIDI.sendNoteOff(note, 0, 1);
 }
 
 void midiRead()

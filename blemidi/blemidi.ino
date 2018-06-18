@@ -122,7 +122,6 @@ void setup()
   // Clear the buffer.
   display.clearDisplay();
   display.display();
-
   Serial.println("IO test");
 
   pinMode(BUTTON_A, INPUT_PULLUP);
