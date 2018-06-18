@@ -38,7 +38,7 @@ unsigned long timeDiff = 0;
 int sw1state = 0;
 int sw2state = 0;
 int midiValue;
-int note = 38; //D1
+int midiNote = 38; //D1
 
 void setup() {
   // put your setup code here, to run once:
@@ -170,7 +170,7 @@ void printTimeVars() {
 void printDiff() {
   midiValue = map(timeDiff, 60, 10, 0, 127);
   midiValue = constrain(midiValue, 20, 127);
-  MIDI.sendNoteOn(note, midiValue, 1);
+  MIDI.sendNoteOn(midiNote, midiValue, 1);
   display.setCursor(0, 24);
   display.print("Diff : ");
   display.print(timeDiff);
@@ -187,6 +187,15 @@ void loop() {
   while (! digitalRead(2)) {
 //    printSwitchState();
 //    printTimeVars();
+    // Read potentiometer and set MIDI note to be triggered
+    
+    midiNote = map(analogRead(4), 50, 850, 21, 108);
+    midiNote = constrain(midiNote, 21, 108);
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.print("MIDI Note: ");
+    display.print(midiNote);
+    display.display();
   }
   
   // If switch leaves resting position, store starting time
@@ -216,7 +225,7 @@ void loop() {
 //    printTimeVars();
   }
   // Send Note Off for previous note.
-  MIDI.sendNoteOff(note, 0, 1);
+  MIDI.sendNoteOff(midiNote, 0, 1);
 }
 
 void midiRead()
