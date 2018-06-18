@@ -189,7 +189,7 @@ void loop() {
 //    printTimeVars();
     // Read potentiometer and set MIDI note to be triggered
     
-    midiNote = map(analogRead(4), 50, 850, 21, 108);
+    midiNote = map(analogRead(4), 40, 875, 21, 108);
     midiNote = constrain(midiNote, 21, 108);
     display.clearDisplay();
     display.setCursor(0, 0);
