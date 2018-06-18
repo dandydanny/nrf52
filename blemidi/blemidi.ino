@@ -192,6 +192,7 @@ void setup()
   display.print(" ");
   display.print(sensorMaxY);
   display.display();  
+  oled.setBatteryVisible(true);
   delay(2000);
 }
 
