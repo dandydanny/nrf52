@@ -172,9 +172,9 @@ void printDiff() {
   midiValue = constrain(midiValue, 20, 127);
   MIDI.sendNoteOn(midiNote, midiValue, 1);
   display.setCursor(0, 24);
-  display.print("Diff : ");
+  display.print("Diff: ");
   display.print(timeDiff);
-  display.print(" ");
+  display.print(" Velocity: ");
   display.print(midiValue);
   display.display();
   
