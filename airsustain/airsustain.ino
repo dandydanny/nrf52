@@ -32,13 +32,8 @@ Adafruit_SSD1306 display = Adafruit_SSD1306();
 MIDI_CREATE_BLE_INSTANCE(blemidi);
 
 // Time and switch state variables
-unsigned long timeBegin = 0;
-unsigned long timeEnd = 0;
-unsigned long timeDiff = 0;
 int sw1state = 0;
 int sw2state = 0;
-int midiValue;
-int note = 38; //D1
 
 void setup() {
   // put your setup code here, to run once:
@@ -157,66 +152,24 @@ void printSwitchState() {
   display.display();
 }
 
-void printTimeVars() {
-  display.setCursor(0, 8);
-  display.print("Begin: ");
-  display.print(timeBegin);
-  display.println();
-  display.print("End  : ");
-  display.print(timeEnd);
-  display.display();
-}
-
-void printDiff() {
-  midiValue = map(timeDiff, 60, 10, 0, 127);
-  midiValue = constrain(midiValue, 20, 127);
-  MIDI.sendNoteOn(note, midiValue, 1);
-  display.setCursor(0, 24);
-  display.print("Diff : ");
-  display.print(timeDiff);
-  display.print(" ");
-  display.print(midiValue);
-  display.display();
-  
-}
-
 void loop() {
   display.clearDisplay();
 
   // If switch is at home position, do nothing
   while (! digitalRead(2)) {
-//    printSwitchState();
-//    printTimeVars();
   }
   
-  // If switch leaves resting position, store starting time
+  // If switch leaves resting position, send pedal-on CC
   if (digitalRead(2)) {
-    timeBegin = millis();
-//    printSwitchState();
-//    printTimeVars();
+    MIDI.sendControlChange(64, 127, 1);
   }
 
-  // Until switch has reach down position, do nothing
-  while (digitalRead(3)) {
-//    printSwitchState();
-//    printTimeVars();
-  }
-  
-  // When switch reach down position, store end time 
-  if (! digitalRead(3)) {
-    timeEnd = millis();
-    timeDiff = timeEnd - timeBegin;
-//    printSwitchState();
-    printDiff();
-  }
-
-  // While sw1 is high (not in home position), halt program loop
+  // Until switch has returned to home position, do nothing
   while (digitalRead(2)) {
-//    printSwitchState();
-//    printTimeVars();
   }
-  // Send Note Off for previous note.
-  MIDI.sendNoteOff(note, 0, 1);
+
+  // Send pedal-off CC
+  MIDI.sendControlChange(64, 0, 1);
 }
 
 void midiRead()
