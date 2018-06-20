@@ -31,10 +31,6 @@ Adafruit_SSD1306 display = Adafruit_SSD1306();
 // and attach BluefruitLE MIDI as the transport.
 MIDI_CREATE_BLE_INSTANCE(blemidi);
 
-// Time and switch state variables
-int sw1state = 0;
-int sw2state = 0;
-
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -162,6 +158,10 @@ void loop() {
   // If switch leaves resting position, send pedal-on CC
   if (digitalRead(2)) {
     MIDI.sendControlChange(64, 127, 1);
+    // Send battery level
+    Serial.print("Battery level: ");
+    Serial.print(analogRead(31));
+    Serial.print("\n");
   }
 
   // Until switch has returned to home position, do nothing
