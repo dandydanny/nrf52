@@ -31,10 +31,16 @@ Adafruit_SSD1306 display = Adafruit_SSD1306();
 // and attach BluefruitLE MIDI as the transport.
 MIDI_CREATE_BLE_INSTANCE(blemidi);
 
+// Battery level variables
+int adcin    = A7;
+int adcvalue = 0;
+float mv_per_lsb = 3600.0F / 1024.0F; // 10-bit ADC with 3.6V input range
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   Serial.println("AirSustain");
+  delay(1000);
 
   // Config the peripheral connection with maximum bandwidth
   // more SRAM required by SoftDevice
@@ -87,12 +93,14 @@ void setup() {
   pinMode(3, INPUT_PULLUP);
 
   // Display
-  display.setTextSize(1);
+  display.setTextSize(2);
   display.setTextColor(WHITE);
   display.setCursor(0, 0);
   display.println("AirSustain");
   display.display(); // actually display all of the above
   delay(1000);
+  // Non-blocking battery read
+  Scheduler.startLoop(getBattLevel);
 }
 
 void startAdv(void)
@@ -140,12 +148,28 @@ void handleNoteOff(byte channel, byte pitch, byte velocity)
 }
 
 void printSwitchState() {
-//  display.clearDisplay();
+  //  display.clearDisplay();
   display.setCursor(0, 0);
   display.print(digitalRead(2));
   display.print(" ");
   display.print(digitalRead(3));
   display.display();
+}
+
+void getBattLevel() {
+  // Get a fresh ADC value
+  adcvalue = analogRead(adcin);
+
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.print("ADC: ");
+  display.println(adcvalue);
+  display.print("mV:  ");
+  display.print((float)adcvalue * mv_per_lsb);
+  display.println(" mV");
+  display.display(); // actually display all of the above
+
+  delay(250);
 }
 
 void loop() {
@@ -154,14 +178,10 @@ void loop() {
   // If switch is at home position, do nothing
   while (! digitalRead(2)) {
   }
-  
+
   // If switch leaves resting position, send pedal-on CC
   if (digitalRead(2)) {
     MIDI.sendControlChange(64, 127, 1);
-    // Send battery level
-    Serial.print("Battery level: ");
-    Serial.print(analogRead(31));
-    Serial.print("\n");
   }
 
   // Until switch has returned to home position, do nothing
