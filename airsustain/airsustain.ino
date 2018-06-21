@@ -17,6 +17,8 @@ BLEMidi blemidi;
 Adafruit_SSD1306 display = Adafruit_SSD1306();
 
 #if defined(ARDUINO_FEATHER52)
+#define SW1 2
+#define SW2 3
 #define BUTTON_A 31
 #define BUTTON_B 30
 #define BUTTON_C 27
@@ -34,7 +36,8 @@ MIDI_CREATE_BLE_INSTANCE(blemidi);
 // Battery level variables
 int adcin    = A7;
 int adcvalue = 0;
-float mv_per_lsb = 3600.0F / 1024.0F; // 10-bit ADC with 3.6V input range
+//float mv_per_lsb = 3600.0F / 1024.0F; // 10-bit ADC with 3.6V input range
+float mv_per_lsb = 4430.0F / 1024.0F; // 10-bit ADC with 3.6V input range
 
 void setup() {
   // put your setup code here, to run once:
@@ -86,21 +89,21 @@ void setup() {
   display.display();
   Serial.println("IO test");
 
-  pinMode(BUTTON_A, INPUT_PULLUP);
+  pinMode(BUTTON_A, INPUT); //this pin used to read battery voltage
   pinMode(BUTTON_B, INPUT_PULLUP);
   pinMode(BUTTON_C, INPUT_PULLUP);
   pinMode(2, INPUT_PULLUP);
   pinMode(3, INPUT_PULLUP);
 
   // Display
-  display.setTextSize(2);
+  display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0, 0);
   display.println("AirSustain");
   display.display(); // actually display all of the above
   delay(1000);
   // Non-blocking battery read
-  Scheduler.startLoop(getBattLevel);
+//  Scheduler.startLoop(getBattLevel);
 }
 
 void startAdv(void)
@@ -162,6 +165,8 @@ void getBattLevel() {
 
   display.clearDisplay();
   display.setCursor(0, 0);
+  display.print("Time: ");
+  display.println(millis()/1000);
   display.print("ADC: ");
   display.println(adcvalue);
   display.print("mV:  ");
@@ -169,27 +174,36 @@ void getBattLevel() {
   display.println(" mV");
   display.display(); // actually display all of the above
 
-  delay(250);
+  delay(100);
 }
 
 void loop() {
   display.clearDisplay();
 
   // If switch is at home position, do nothing
-  while (! digitalRead(2)) {
+  while (digitalRead(BUTTON_C)) {
+    getBattLevel();
   }
 
   // If switch leaves resting position, send pedal-on CC
-  if (digitalRead(2)) {
+  if (! digitalRead(BUTTON_C)) {
     MIDI.sendControlChange(64, 127, 1);
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.print("Pedal On");
+    display.display();
   }
 
   // Until switch has returned to home position, do nothing
-  while (digitalRead(2)) {
+  while (! digitalRead(BUTTON_C)) {
   }
 
   // Send pedal-off CC
   MIDI.sendControlChange(64, 0, 1);
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.print("Pedal Off");
+  display.display();
 }
 
 void midiRead()
