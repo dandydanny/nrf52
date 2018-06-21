@@ -178,32 +178,32 @@ void getBattLevel() {
 }
 
 void loop() {
-  display.clearDisplay();
+//  display.clearDisplay();
 
   // If switch is at home position, do nothing
-  while (digitalRead(BUTTON_C)) {
-    getBattLevel();
+  while (! digitalRead(SW1)) {
+  //  getBattLevel();
   }
 
   // If switch leaves resting position, send pedal-on CC
-  if (! digitalRead(BUTTON_C)) {
+  if (digitalRead(SW1)) {
     MIDI.sendControlChange(64, 127, 1);
-    display.clearDisplay();
-    display.setCursor(0, 0);
-    display.print("Pedal On");
-    display.display();
+//    display.clearDisplay();
+//    display.setCursor(0, 0);
+//    display.print("Pedal On");
+//    display.display();
   }
 
   // Until switch has returned to home position, do nothing
-  while (! digitalRead(BUTTON_C)) {
+  while (digitalRead(SW1)) {
   }
 
   // Send pedal-off CC
   MIDI.sendControlChange(64, 0, 1);
-  display.clearDisplay();
-  display.setCursor(0, 0);
-  display.print("Pedal Off");
-  display.display();
+//  display.clearDisplay();
+//  display.setCursor(0, 0);
+//  display.print("Pedal Off");
+//  display.display();
 }
 
 void midiRead()
